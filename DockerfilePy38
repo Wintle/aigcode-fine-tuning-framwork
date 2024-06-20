@@ -1,0 +1,36 @@
+FROM  aigcode/ubuntu22.04-arm64-python38-pytorch220:v0.0.1 
+
+
+USER root
+
+WORKDIR /app
+
+# ARG TOOLKIT_PATH=/usr/local/Ascend/ascend-toolkit/latest
+# ARG ASCEND_PLUGIN_HOME=/usr/local/Ascend/tfplugin/latest
+# ENV GLOG_v=2 \
+#    LD_LIBRARY_PATH=/usr/local/Ascend/driver/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver:$LD_LIBRARY_PATH \
+#    ASCEND_HOME_PATH=/usr/local/Ascend/ascend-toolkit/latest \
+#    ASCEND_TOOLKIT_HOME=/usr/local/Ascend/ascend-toolkit/latest \
+#    TBE_IMPL_PATH=$TOOLKIT_PATH/opp/op_impl/built-in/dai_core/tbe \
+#    FWK_PYTHON_PATH=$TOOLKIT_PATH/fwkacllib/python/site-packages \
+#    PATH=$TOOLKIT_PATH/fwkacllib/ccec_compiler/bin/:$PATH \
+#    ASCEND_OPP_PATH=$TOOLKIT_PATH/opp \
+#    ASCEND_AICPU_PATH=$TOOLKIT_PATH \z
+#    ASCEND_PLUGIN_HOME=/usr/local/Ascend/tfplugin/latest \
+#    TOOLCHAIN_HOME=${ASCEND_TOOLKIT_HOME}/toolkit 
+
+# ENV LD_LIBRARY_PATH=/usr/local/Ascend/ascend-toolkit/latest/tools/aml/lib64:/usr/local/Ascend/ascend-toolkit/latest/tools/aml/lib64/plugin:/usr/local/python3.10.11/lib:/usr/local/Ascend/ascend-toolkit/latest/aarch64-linux/lib64/:/usr/local/Ascend/ascend-toolkit/latest/aarch64-linux/devlib/
+
+COPY requirements.txt /app/
+RUN pip install -r requirements.txt
+
+COPY . /app/
+RUN pip install -e .[deepspeed,metrics,bitsandbytes,qwen]
+# RUN export http_proxy=http://user:passWorD@192.168.0.6:1080
+# RUN pip install git+https://github.com/Wintle/aim.git
+RUN pip install aim
+
+VOLUME [ "/root/.cache/huggingface/", "/app/data", "/app/output" ]
+EXPOSE 7860
+
+CMD [ "./run.sh" ]
